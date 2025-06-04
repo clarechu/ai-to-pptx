@@ -107,16 +107,26 @@ const StepTwoThreeGenerateOutline = ({activeStep, setActiveStep, inputData, setI
                 'Cache-Control': 'no-cache',
                 'token': token
             },
-            payload: JSON.stringify(submitData),
+            payload: JSON.stringify(submitData || {}),
         }) as any
         source.onmessage = function (data: any) {
             if(data.data != "[DONE]")       {
                 try {
-                    const json = JSON.parse(data.data)
-                    if(json && json.choices && json.choices[0] && json.choices[0]['delta'] && json.choices[0]['delta']['content']) {
+                    const json = JSON.parse(data?.data || {})
+                    // if(json && json.choices && json.choices[0] && json.choices[0]['delta'] && json.choices[0]['delta']['content']) {
+
+                    //   //console.log("json.choices[0]['delta']['content']", json.choices[0]['delta']['content'])
+                    //   outline = outline + json.choices[0]['delta']['content']
+                    //   const outlineHtml = marked.parse(outline.replace('```markdown', '').replace(/```/g, '')) as string
+                    //   if(outline && outline.length > 20) {
+                    //     setInputData((prevState: any) => ({...prevState, outlineContent: outline, outlineHtml: outlineHtml}))
+                    //   }
+                    // }
+
+                    if(json && json.message && json.message.content) {
 
                       //console.log("json.choices[0]['delta']['content']", json.choices[0]['delta']['content'])
-                      outline = outline + json.choices[0]['delta']['content']
+                      outline = outline + json.message.content
                       const outlineHtml = marked.parse(outline.replace('```markdown', '').replace(/```/g, '')) as string
                       if(outline && outline.length > 20) {
                         setInputData((prevState: any) => ({...prevState, outlineContent: outline, outlineHtml: outlineHtml}))
@@ -137,7 +147,7 @@ const StepTwoThreeGenerateOutline = ({activeStep, setActiveStep, inputData, setI
         }
         source.onend = function (data: any) {
             if (data.data.startsWith('{') && data.data.endsWith('}')) {
-                const json = JSON.parse(data.data)
+                const json = JSON.parse(data?.data || {})
                 if (json.code != 0) {
                     alert('生成大纲异常：' + json.message)
                     setActiveStep(0)
